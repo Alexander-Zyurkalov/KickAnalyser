@@ -16,6 +16,40 @@ cmake_minimum_required(VERSION 3.22)
 
 project(KickAnalyser VERSION 0.0.1)
 
+# Check if Node.js and npm are installed
+find_program(NODE_EXECUTABLE node)
+find_program(NPM_EXECUTABLE npm)
+
+if(NODE_EXECUTABLE AND NPM_EXECUTABLE)
+ # Define the path to your ui folder and package.json
+ set(UI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ui)
+ set(PACKAGE_JSON ${UI_DIR}/package.json)
+ set(PACKAGE_LOCK_JSON ${UI_DIR}/package-lock.json)
+ set(NPM_INSTALL_STAMP ${CMAKE_CURRENT_BINARY_DIR}/npm_install.stamp)
+
+ # Create a custom command that runs npm install only when package.json changes
+ add_custom_command(
+         OUTPUT ${NPM_INSTALL_STAMP}
+         COMMAND ${NPM_EXECUTABLE} install
+         COMMAND ${CMAKE_COMMAND} -E touch ${NPM_INSTALL_STAMP}
+         WORKING_DIRECTORY ${UI_DIR}
+         DEPENDS ${PACKAGE_JSON}
+         COMMENT "Running npm install in ${UI_DIR}"
+ )
+
+ # Create a custom target that depends on the stamp file
+ add_custom_target(npm_install ALL DEPENDS ${NPM_INSTALL_STAMP})
+
+ # Optional: Add a message to show when npm install is being run
+ add_custom_command(
+         TARGET npm_install
+         PRE_BUILD
+         COMMAND ${CMAKE_COMMAND} -E echo "Checking if npm install is needed..."
+ )
+else()
+ message(FATAL_ERROR "Node.js and npm are required but not found")
+endif()
+
 # If you've installed JUCE somehow (via a package manager, or directly using the CMake install
 # target), you'll need to tell this project that it depends on the installed copy of JUCE. If you've
 # included JUCE directly in your source tree (perhaps as a submodule), you'll need to tell CMake to
