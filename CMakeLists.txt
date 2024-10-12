@@ -21,24 +21,22 @@ find_program(NODE_EXECUTABLE node)
 find_program(NPM_EXECUTABLE npm)
 
 if(NODE_EXECUTABLE AND NPM_EXECUTABLE)
- # Define the path to your ui folder and package.json
- set(UI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ui)
- set(PACKAGE_JSON ${UI_DIR}/package.json)
- set(PACKAGE_LOCK_JSON ${UI_DIR}/package-lock.json)
- set(NPM_INSTALL_STAMP ${CMAKE_CURRENT_BINARY_DIR}/npm_install.stamp)
+     # Define the path to your ui folder and package.json
+     set(UI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ui)
+     set(PACKAGE_JSON ${UI_DIR}/package.json)
+     set(NPM_NODE_MODULES_PACKAGE_LOCK ${UI_DIR}/node_modules/.package-lock.json)
 
  # Create a custom command that runs npm install only when package.json changes
  add_custom_command(
-         OUTPUT ${NPM_INSTALL_STAMP}
+         OUTPUT ${NPM_NODE_MODULES_PACKAGE_LOCK}
          COMMAND ${NPM_EXECUTABLE} install
-         COMMAND ${CMAKE_COMMAND} -E touch ${NPM_INSTALL_STAMP}
          WORKING_DIRECTORY ${UI_DIR}
          DEPENDS ${PACKAGE_JSON}
          COMMENT "Running npm install in ${UI_DIR}"
  )
 
  # Create a custom target that depends on the stamp file
- add_custom_target(npm_install ALL DEPENDS ${NPM_INSTALL_STAMP})
+ add_custom_target(npm_install ALL DEPENDS ${NPM_NODE_MODULES_PACKAGE_LOCK})
 
  # Optional: Add a message to show when npm install is being run
  add_custom_command(
@@ -47,7 +45,7 @@ if(NODE_EXECUTABLE AND NPM_EXECUTABLE)
          COMMAND ${CMAKE_COMMAND} -E echo "Checking if npm install is needed..."
  )
 else()
- message(FATAL_ERROR "Node.js and npm are required but not found")
+    message(FATAL_ERROR "Node.js and npm are required but not found")
 endif()
 
 # If you've installed JUCE somehow (via a package manager, or directly using the CMake install
@@ -90,6 +88,8 @@ juce_add_plugin(${CMAKE_PROJECT_NAME}
     NEEDS_WEBVIEW2 TRUE
 
 )
+
+add_dependencies(${CMAKE_PROJECT_NAME} npm_install)
 
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
