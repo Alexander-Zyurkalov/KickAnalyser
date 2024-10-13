@@ -4,3 +4,4 @@ ui/node_modules
 ui/.svelte-kit
 ui/buid
 ui/test-results
+ui/build
