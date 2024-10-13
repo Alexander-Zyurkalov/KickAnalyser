@@ -44,6 +44,33 @@ if(NODE_EXECUTABLE AND NPM_EXECUTABLE)
             PRE_BUILD
             COMMAND ${CMAKE_COMMAND} -E echo "Checking if npm install is needed..."
     )
+
+    # Let's build the svelte kit project
+    file(GLOB_RECURSE SVELTE_SOURCES
+            ${UI_DIR}/src/*.svelte
+            ${UI_DIR}/src/*.js
+            ${UI_DIR}/src/*.ts
+            ${UI_DIR}/static/*
+    )
+    # Create a timestamp file to track builds
+    set(BUILD_INDEX_HTML ${UI_DIR}/build/index.html)
+
+    add_custom_command(
+            OUTPUT ${BUILD_INDEX_HTML}
+            COMMAND npm run build
+            DEPENDS ${SVELTE_SOURCES}
+            WORKING_DIRECTORY ${UI_DIR}
+            COMMENT "Building SvelteKit project"
+    )
+
+    add_custom_target(svelte_build ALL DEPENDS ${BUILD_INDEX_HTML})
+    # Add a message to show when `npm start build` is being run
+    add_custom_command(
+            TARGET svelte_build
+            PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E echo "Checking if npm run build is needed..."
+    )
+
 else()
     message(FATAL_ERROR "Node.js and npm are required but not found")
 endif()
@@ -92,6 +119,7 @@ juce_add_plugin(${CMAKE_PROJECT_NAME}
 )
 
 add_dependencies(${CMAKE_PROJECT_NAME} npm_install)
+add_dependencies(${CMAKE_PROJECT_NAME} svelte_build)
 
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
