@@ -16,6 +16,10 @@ cmake_minimum_required(VERSION 3.22)
 
 project(KickAnalyser VERSION 0.0.1)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
+endif()
+
 # Check if Node.js and npm are installed
 find_program(NODE_EXECUTABLE node)
 find_program(NPM_EXECUTABLE npm)
@@ -119,8 +123,13 @@ juce_add_plugin(${CMAKE_PROJECT_NAME}
 )
 
 add_dependencies(${CMAKE_PROJECT_NAME} npm_install)
-add_dependencies(${CMAKE_PROJECT_NAME} svelte_build)
-
+# Add SvelteKit build dependency only for Release builds
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_dependencies(${CMAKE_PROJECT_NAME} svelte_build)
+    message(STATUS "SvelteKit build added to Release configuration")
+else()
+    message(STATUS "SvelteKit build skipped for non-Release configuration")
+endif()
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
 # this header will be automatically added to the target. The main function of the JuceHeader is to
