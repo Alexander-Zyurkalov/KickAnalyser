@@ -21,32 +21,34 @@ find_program(NODE_EXECUTABLE node)
 find_program(NPM_EXECUTABLE npm)
 
 if(NODE_EXECUTABLE AND NPM_EXECUTABLE)
-     # Define the path to your ui folder and package.json
-     set(UI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ui)
-     set(PACKAGE_JSON ${UI_DIR}/package.json)
-     set(NPM_NODE_MODULES_PACKAGE_LOCK ${UI_DIR}/node_modules/.package-lock.json)
+    # Define the path to your ui folder and package.json
+    set(UI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ui)
+    set(PACKAGE_JSON ${UI_DIR}/package.json)
+    set(NPM_NODE_MODULES_PACKAGE_LOCK ${UI_DIR}/node_modules/.package-lock.json)
 
- # Create a custom command that runs npm install only when package.json changes
- add_custom_command(
-         OUTPUT ${NPM_NODE_MODULES_PACKAGE_LOCK}
-         COMMAND ${NPM_EXECUTABLE} install
-         WORKING_DIRECTORY ${UI_DIR}
-         DEPENDS ${PACKAGE_JSON}
-         COMMENT "Running npm install in ${UI_DIR}"
- )
+    # Create a custom command that runs npm install only when package.json changes
+    add_custom_command(
+            OUTPUT ${NPM_NODE_MODULES_PACKAGE_LOCK}
+            COMMAND ${NPM_EXECUTABLE} install
+            WORKING_DIRECTORY ${UI_DIR}
+            DEPENDS ${PACKAGE_JSON}
+            COMMENT "Running npm install in ${UI_DIR}"
+    )
 
- # Create a custom target that depends on the stamp file
- add_custom_target(npm_install ALL DEPENDS ${NPM_NODE_MODULES_PACKAGE_LOCK})
+    # Create a custom target that depends on the stamp file
+    add_custom_target(npm_install ALL DEPENDS ${NPM_NODE_MODULES_PACKAGE_LOCK})
 
- # Optional: Add a message to show when npm install is being run
- add_custom_command(
-         TARGET npm_install
-         PRE_BUILD
-         COMMAND ${CMAKE_COMMAND} -E echo "Checking if npm install is needed..."
- )
+    # Add a message to show when npm install is being run
+    add_custom_command(
+            TARGET npm_install
+            PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E echo "Checking if npm install is needed..."
+    )
 else()
     message(FATAL_ERROR "Node.js and npm are required but not found")
 endif()
+
+
 
 # If you've installed JUCE somehow (via a package manager, or directly using the CMake install
 # target), you'll need to tell this project that it depends on the installed copy of JUCE. If you've
